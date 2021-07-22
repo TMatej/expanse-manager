@@ -8,6 +8,6 @@ namespace ExpanseManagerServiceLibrary.Services.Export
 {
     public interface IDataExporter<T>
     {
-        Task<bool> StoreData(List<T> data, string pathToFile);
+        Task<bool> StoreData(IList<T> data, string pathToFile);
     }
 }
