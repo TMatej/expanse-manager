@@ -25,7 +25,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
             return result != 0;
         }
 
-        public async Task<List<Payment>> GetAllPaymentsAsync(int? limit = null)
+        public async Task<List<PaymentModel>> GetAllPaymentsAsync(int? limit = null)
         {
             var sql = @"SELECT 
                           payment.Id,
@@ -89,7 +89,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
             return result.AsList();
         }
 
-        public async Task<Payment> GetPaymentByIdAsync(long id)
+        public async Task<PaymentModel> GetPaymentByIdAsync(long id)
         {
             var sql = @"SELECT 
                           payment.Id,
@@ -149,7 +149,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
             return result.SingleOrDefault();
         }
 
-        public async Task<List<Payment>> GetPaymentsByReceiverIdAsync(long id, int? limit = null)
+        public async Task<List<PaymentModel>> GetPaymentsByReceiverIdAsync(long id, int? limit = null)
         {
             var sql = @"SELECT 
                           payment.Id,
@@ -216,7 +216,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
             return result.AsList();
         }
 
-        public async Task<List<Payment>> GetPaymentsBySenderIdAsync(long id, int? limit = null)
+        public async Task<List<PaymentModel>> GetPaymentsBySenderIdAsync(long id, int? limit = null)
         {
             var sql = @"SELECT 
                           payment.Id,
@@ -283,7 +283,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
             return result.AsList();
         }
 
-        public async Task<Payment> StorePaymentAsync(Payment payment)
+        public async Task<PaymentModel> StorePaymentAsync(PaymentModel payment)
         {
             var sql = @"INSERT INTO payment(Sender, SenderCurrency, SenderAmount, Receiver, ReceiverCurrency, ReceiverAmount, TransferDate)
                         VALUES(@SenderId, @SenderCurrencyId, @SenderAmount, @ReceiverId, @ReceiverCurrencyId, @ReceiverAmount, @TransferDate);
@@ -307,12 +307,12 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
             return payment;
         }
 
-        private async Task<IEnumerable<Payment>> StartGetQuery<T>(string sql, T parameters)
+        private async Task<IEnumerable<PaymentModel>> StartGetQuery<T>(string sql, T parameters)
         {
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
 
-            var result = await cnn.QueryAsync<Payment, Account, Currency, Currency, Account, Currency, Currency, Payment>(sql,
+            var result = await cnn.QueryAsync<PaymentModel, AccountModel, CurrencyModel, CurrencyModel, AccountModel, CurrencyModel, CurrencyModel, PaymentModel>(sql,
                 (payment, sender, innerSenderCurrency, senderCurrency, receiver, innerReceiverCurrency, receiverCurrency) =>
                 {
                     sender.Currency = innerSenderCurrency;

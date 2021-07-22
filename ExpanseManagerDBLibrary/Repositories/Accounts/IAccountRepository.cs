@@ -9,11 +9,11 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
 {
     public interface IAccountRepository
     {
-        Task<List<Account>> GetAllAccountsAsync();
-        Task<Account> GetAccountByIdAsync(long id);
-        Task<Account> GetAccountByUsernameAsync(string username);
-        Task<Account> StoreAccountAsync(Account account);
-        Task<bool> UpdateAccountAsync(Account account);
+        Task<List<AccountModel>> GetAllAccountsAsync();
+        Task<AccountModel> GetAccountByIdAsync(long id);
+        Task<AccountModel> GetAccountByUsernameAsync(string username);
+        Task<AccountModel> StoreAccountAsync(AccountModel account);
+        Task<bool> UpdateAccountAsync(AccountModel account);
         Task<bool> DeleteAccountAsync(long id);
     }
 }

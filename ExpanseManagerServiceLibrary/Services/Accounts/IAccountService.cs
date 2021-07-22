@@ -10,10 +10,10 @@ namespace ExpanseManagerServiceLibrary.Services.Accounts
     public interface IAccountService
     {
         Task<bool> ValidateUsernameAsync(string username);
-        Task<List<Account>> GetAllAccountsAsync();
-        Task<Account> GetAccountByUserNameAsync(string username);
-        Task<Account> CreateAccountAsync(Account account);
-        Task<bool> UpdateAccountAsync(Account account);
+        Task<List<AccountModel>> GetAllAccountsAsync();
+        Task<AccountModel> GetAccountByUserNameAsync(string username);
+        Task<AccountModel> CreateAccountAsync(AccountModel account);
+        Task<bool> UpdateAccountAsync(AccountModel account);
         Task<bool> DeleteAccountAsync(long id);
     }
 }

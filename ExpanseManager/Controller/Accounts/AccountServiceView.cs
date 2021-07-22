@@ -25,7 +25,7 @@ namespace ExpanseManager.Controller.Services.Accounts
             CurrencyService = currencyService;
         }
 
-        public Account CreateNewAccount()
+        public AccountModel CreateNewAccount()
         {
             Console.Clear();
             BasicOutputMessages.PrintResponseMessage("To create new account please fill in the request. All information can be changed after logging into your account.");
@@ -34,14 +34,14 @@ namespace ExpanseManager.Controller.Services.Accounts
             string password = CreatePassword();
             string name = CreateName();
             Sex gender = ChooseGender();
-            Currency currency = ChooseCurrency();
+            CurrencyModel currency = ChooseCurrency();
 
-            Account account = CreateAccount(username, password, name, gender, currency);
+            AccountModel account = CreateAccount(username, password, name, gender, currency);
 
             return account;
         }
 
-        public Account CreateRootAccount()
+        public AccountModel CreateRootAccount()
         {
             Console.Clear();
             BasicOutputMessages.PrintResponseMessage("To create a root account, please follow these few steps.");
@@ -49,16 +49,16 @@ namespace ExpanseManager.Controller.Services.Accounts
             string password = CreatePassword();
             string name = "Application root account";
             Sex gender = Sex.Other;
-            Currency currency = ChooseCurrency();
+            CurrencyModel currency = ChooseCurrency();
 
-            Account account = CreateAccount(username, password, name, gender, currency);
+            AccountModel account = CreateAccount(username, password, name, gender, currency);
 
             return account;
         }
 
-        private Account CreateAccount(string username, string password, string name, Sex gender, Currency currency)
+        private AccountModel CreateAccount(string username, string password, string name, Sex gender, CurrencyModel currency)
         {
-            Account newAccount = new()
+            AccountModel newAccount = new()
             {
                 UserName = username,
                 PasswordHash = password,
@@ -132,17 +132,17 @@ namespace ExpanseManager.Controller.Services.Accounts
             return hashedPassword;
         }
 
-        public Account GetAccountByUserName(string nickName)
+        public AccountModel GetAccountByUserName(string nickName)
         {
             return Task.Run(async () => await AccountService.GetAccountByUserNameAsync(nickName)).Result;
         }
 
-        public List<Account> GetAllAccounts()
+        public List<AccountModel> GetAllAccounts()
         {
             return Task.Run(async () => await AccountService.GetAllAccountsAsync()).Result;
         }
 
-        public bool UpdateAccount(Account account)
+        public bool UpdateAccount(AccountModel account)
         {
             return Task.Run(async () => await AccountService.UpdateAccountAsync(account)).Result;
         }
@@ -205,7 +205,7 @@ namespace ExpanseManager.Controller.Services.Accounts
             return gender;
         }
 
-        public Currency ChooseCurrency(string request = "Pick currency for your account. If none of the following is picked, first listed currency is used.")
+        public CurrencyModel ChooseCurrency(string request = "Pick currency for your account. If none of the following is picked, first listed currency is used.")
         {
             string input;
 
@@ -231,7 +231,7 @@ namespace ExpanseManager.Controller.Services.Accounts
             Console.Write("Option: ");
             input = Console.ReadLine().Trim();
             Console.WriteLine();
-            Currency currency = null;
+            CurrencyModel currency = null;
 
             if (!int.TryParse(input, out var parsedInput) || parsedInput <= 0 || parsedInput > currencies.Count)
             {
@@ -266,7 +266,7 @@ namespace ExpanseManager.Controller.Services.Accounts
             return true;
         }
 
-        public void CoppyAccount(Account source, Account destination)
+        public void CoppyAccount(AccountModel source, AccountModel destination)
         {
             destination.Id = source.Id;
             destination.UserName = source.UserName;

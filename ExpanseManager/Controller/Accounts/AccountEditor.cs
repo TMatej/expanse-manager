@@ -8,15 +8,15 @@ namespace ExpanseManager.Controller.Services.Accounts
     {
         private bool confirmEditing = false;
 
-        public Account Account { get; }
-        public Account NewAccount { get; }
+        public AccountModel Account { get; }
+        public AccountModel NewAccount { get; }
         public AccountServiceView AccountServiceView { get; }
         
-        public AccountEditor(Account account, AccountServiceView accountService)
+        public AccountEditor(AccountModel account, AccountServiceView accountService)
         {
             Account = account;
             AccountServiceView = accountService;
-            NewAccount = new Account();
+            NewAccount = new AccountModel();
             AccountServiceView.CoppyAccount(Account, NewAccount);
         }
 
@@ -50,7 +50,7 @@ namespace ExpanseManager.Controller.Services.Accounts
                     BasicOutputMessages.PrintResponseMessage("Your current name is: ");
                     BasicOutputMessages.PrintResponseMessage(Account.Name);
                     NewAccount.Name = AccountServiceView.CreateName("Insert your new name.");
-                    Console.WriteLine("Success!");
+                    BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "username":
@@ -61,13 +61,13 @@ namespace ExpanseManager.Controller.Services.Accounts
                     BasicOutputMessages.PrintResponseMessage("Your current username is:");
                     BasicOutputMessages.PrintResponseMessage(Account.UserName);
                     NewAccount.UserName = AccountServiceView.CreateUserName("Choose new unique username. Unfortunately, it cannot be your present name.");
-                    Console.WriteLine("Success!");
+                    BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "password":
                     BasicOutputMessages.PrintResponseMessage("Your current password is: ... You should remember it mate :D ");
                     NewAccount.PasswordHash = AccountServiceView.CreatePassword();
-                    Console.WriteLine("Success!");
+                    BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "sex":
@@ -78,11 +78,15 @@ namespace ExpanseManager.Controller.Services.Accounts
                     BasicOutputMessages.PrintResponseMessage("Your current username is:");
                     BasicOutputMessages.PrintResponseMessage(Enum.GetName(Account.Gender));
                     NewAccount.Gender = AccountServiceView.ChooseGender("Pick your new gender.");
-                    Console.WriteLine("Success!");
+                    BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "currency":
-                    /*GONNA BE PAIN IN THE ASS*/
+                    BasicOutputMessages.PrintResponseMessage("Your current currency is:");
+                    BasicOutputMessages.PrintResponseMessage($"{Account.Currency.Name} [{Account.Currency.ShortName}]");
+                    NewAccount.Currency = AccountServiceView.ChooseCurrency("Pick new currency for your account. If none of the following is picked, first listed currency is used.");
+                    BasicOutputMessages.PrintSuccessMessage("Success!");
+                    BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "abort":
                     Console.Clear();
@@ -119,14 +123,12 @@ namespace ExpanseManager.Controller.Services.Accounts
         {
             if (Account.UserName.Equals("root"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("This property of user 'root' cannot be changed!");
-                Console.ForegroundColor = ConsoleColor.White;
+                BasicOutputMessages.PrintErrorMessage("This property of user 'root' cannot be changed!");
                 BasicOutputMessages.PrintAcknowledgeMessage();
                 return true;
             }
 
             return false;
-        }
+        } 
     }
 }

@@ -24,19 +24,19 @@ namespace ExpanseManagerDBLibrary.Repositories.Currencies
             return result != 0;
         }
 
-        public async Task<List<Currency>> GetAllCurrenciesAsync()
+        public async Task<List<CurrencyModel>> GetAllCurrenciesAsync()
         {
             var sql = @"SELECT * 
                         FROM currency;";
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
 
-            var result = await cnn.QueryAsync<Currency>(sql);
+            var result = await cnn.QueryAsync<CurrencyModel>(sql);
             return result.AsList();
         }
 
         /*May throw not found exception*/
-        public async Task<Currency> GetCurrencyByIdAsync(long id)
+        public async Task<CurrencyModel> GetCurrencyByIdAsync(long id)
         {
             var sql = @"SELECT * 
                         FROM currency 
@@ -45,11 +45,11 @@ namespace ExpanseManagerDBLibrary.Repositories.Currencies
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
 
-            return await cnn.QuerySingleOrDefaultAsync<Currency>(sql, parameters);
+            return await cnn.QuerySingleOrDefaultAsync<CurrencyModel>(sql, parameters);
         }
 
         /*May throw not found exception*/
-        public async Task<Currency> GetCurrencyByShortNameAsync(string shortName)
+        public async Task<CurrencyModel> GetCurrencyByShortNameAsync(string shortName)
         {
             var sql = @"SELECT * 
                         FROM currency 
@@ -59,11 +59,11 @@ namespace ExpanseManagerDBLibrary.Repositories.Currencies
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
 
-            return await cnn.QuerySingleOrDefaultAsync<Currency>(sql, parameters);
+            return await cnn.QuerySingleOrDefaultAsync<CurrencyModel>(sql, parameters);
         }
 
         /*May throw validation exception*/
-        public async Task<Currency> StoreCurrencyAsync(Currency currency)
+        public async Task<CurrencyModel> StoreCurrencyAsync(CurrencyModel currency)
         {
             var sql = @"INSERT INTO currency(Name, ShortName) 
                             VALUES(@Name, @ShortName); 
@@ -77,7 +77,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Currencies
             return currency;
         }
 
-        public async Task<bool> UpdateCurrencyAsync(Currency currency)
+        public async Task<bool> UpdateCurrencyAsync(CurrencyModel currency)
         {
             var sql = @"UPDATE currency 
                         SET Name = @Name,

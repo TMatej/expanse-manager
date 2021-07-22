@@ -9,11 +9,11 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
 {
     public interface ICurrencyConversionRepository
     {
-        Task<List<CurrencyConversion>> GetAllCurrencyConversionsAsync();
-        Task<CurrencyConversion> GetCurrencyConversionByIdAsync(long id);
-        Task<CurrencyConversion> GetCurrencyConversionByCurrenciesIdAsync(long currencyFromId, long currencyToId);
-        Task<CurrencyConversion> StoreCurrencyConversionAsync(CurrencyConversion conversion);
-        Task<bool> UpdateCurrencyConversionAsync(CurrencyConversion conversion);
+        Task<List<CurrencyConversionModel>> GetAllCurrencyConversionsAsync();
+        Task<CurrencyConversionModel> GetCurrencyConversionByIdAsync(long id);
+        Task<CurrencyConversionModel> GetCurrencyConversionByCurrenciesIdAsync(long currencyFromId, long currencyToId);
+        Task<CurrencyConversionModel> StoreCurrencyConversionAsync(CurrencyConversionModel conversion);
+        Task<bool> UpdateCurrencyConversionAsync(CurrencyConversionModel conversion);
         Task<bool> DeleteCurrencyConversionAsync(long id);
     }
 }

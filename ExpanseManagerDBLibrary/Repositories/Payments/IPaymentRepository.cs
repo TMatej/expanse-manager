@@ -9,11 +9,11 @@ namespace ExpanseManagerDBLibrary.Repositories.Payments
 {
     public interface IPaymentRepository
     {
-        Task<List<Payment>> GetAllPaymentsAsync(int? limit);
-        Task<Payment> GetPaymentByIdAsync(long id);
-        Task<List<Payment>> GetPaymentsBySenderIdAsync(long id, int? limit);
-        Task<List<Payment>> GetPaymentsByReceiverIdAsync(long id, int? limit);
-        Task<Payment> StorePaymentAsync(Payment payment);
+        Task<List<PaymentModel>> GetAllPaymentsAsync(int? limit);
+        Task<PaymentModel> GetPaymentByIdAsync(long id);
+        Task<List<PaymentModel>> GetPaymentsBySenderIdAsync(long id, int? limit);
+        Task<List<PaymentModel>> GetPaymentsByReceiverIdAsync(long id, int? limit);
+        Task<PaymentModel> StorePaymentAsync(PaymentModel payment);
         Task<bool> DeletePaymentAsync(long id);
     }
 }

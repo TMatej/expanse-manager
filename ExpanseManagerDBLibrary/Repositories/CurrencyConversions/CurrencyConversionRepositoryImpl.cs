@@ -1,11 +1,9 @@
 ﻿using Dapper;
 using ExpanseManagerDBLibrary.Models;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
@@ -24,7 +22,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             return result != 0;
         }
 
-        public async Task<List<CurrencyConversion>> GetAllCurrencyConversionsAsync()
+        public async Task<List<CurrencyConversionModel>> GetAllCurrencyConversionsAsync()
         {
             var sql = @"SELECT 
                           conversion.Id,
@@ -45,7 +43,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
                           ON conversion.CurrencyTo = currencyTo.Id;";
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
-            var result = await cnn.QueryAsync<CurrencyConversion, Currency, Currency, CurrencyConversion>(sql,
+            var result = await cnn.QueryAsync<CurrencyConversionModel, CurrencyModel, CurrencyModel, CurrencyConversionModel>(sql,
                 (conversion, currencyFrom, currencyTo) =>
                 {
                     conversion.CurrencyFrom = currencyFrom;
@@ -57,7 +55,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             return result.AsList();
         }
 
-        public async Task<CurrencyConversion> GetCurrencyConversionByCurrenciesIdAsync(long currencyFromId, long currencyToId)
+        public async Task<CurrencyConversionModel> GetCurrencyConversionByCurrenciesIdAsync(long currencyFromId, long currencyToId)
         {
             /*split in unique queries or start it in one query as follows?*/
             var sql = @"SELECT 
@@ -84,7 +82,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             var parameters = new { FromId = currencyFromId, ToId = currencyToId };
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
-            var result = await cnn.QueryAsync<CurrencyConversion, Currency, Currency, CurrencyConversion>(sql,
+            var result = await cnn.QueryAsync<CurrencyConversionModel, CurrencyModel, CurrencyModel, CurrencyConversionModel>(sql,
                 (conversion, currencyFrom, currencyTo) =>
                 {
                     conversion.CurrencyFrom = currencyFrom;
@@ -97,7 +95,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             return result.SingleOrDefault();
         }
 
-        public async Task<CurrencyConversion> GetCurrencyConversionByIdAsync(long id)
+        public async Task<CurrencyConversionModel> GetCurrencyConversionByIdAsync(long id)
         {
             var sql = @"SELECT 
                           conversion.Id,
@@ -122,7 +120,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             var parameters = new { Id = id };
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
-            var result = await cnn.QueryAsync<CurrencyConversion, Currency, Currency, CurrencyConversion>(sql,
+            var result = await cnn.QueryAsync<CurrencyConversionModel, CurrencyModel, CurrencyModel, CurrencyConversionModel>(sql,
                 (conversion, currencyFrom, currencyTo) =>
                 {
                     conversion.CurrencyFrom = currencyFrom;
@@ -135,7 +133,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             return result.SingleOrDefault();
         }
 
-        public async Task<CurrencyConversion> StoreCurrencyConversionAsync(CurrencyConversion conversion)
+        public async Task<CurrencyConversionModel> StoreCurrencyConversionAsync(CurrencyConversionModel conversion)
         {
             var sql = @"INSERT INTO currency_conversion(CurrencyFrom, CurrencyTo, Rate, LastTimeUpdated)
                         VALUES(@CurrencyFromId, @CurrencyToId, @Rate, @LastTimeUpdated);
@@ -156,7 +154,7 @@ namespace ExpanseManagerDBLibrary.Repositories.CurrencyConversions
             return conversion;
         }
 
-        public async Task<bool> UpdateCurrencyConversionAsync(CurrencyConversion conversion)
+        public async Task<bool> UpdateCurrencyConversionAsync(CurrencyConversionModel conversion)
         {
             var sql = @"UPDATE currency_conversion 
                         SET CurrencyFrom = @CurrencyFrom,

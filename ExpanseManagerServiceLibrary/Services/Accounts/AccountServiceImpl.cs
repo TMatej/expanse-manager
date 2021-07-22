@@ -14,12 +14,12 @@ namespace ExpanseManagerServiceLibrary.Services.Accounts
             AccountRepository = accountRepository;
         }
 
-        public async Task<Account> GetAccountByUserNameAsync(string username)
+        public async Task<AccountModel> GetAccountByUserNameAsync(string username)
         {
             return await AccountRepository.GetAccountByUsernameAsync(username);
         }
 
-        public async Task<Account> CreateAccountAsync(Account account)
+        public async Task<AccountModel> CreateAccountAsync(AccountModel account)
         {
             return await AccountRepository.StoreAccountAsync(account);
         }
@@ -36,12 +36,12 @@ namespace ExpanseManagerServiceLibrary.Services.Accounts
             return result == null;
         }
 
-        public async Task<List<Account>> GetAllAccountsAsync()
+        public async Task<List<AccountModel>> GetAllAccountsAsync()
         {
             return await AccountRepository.GetAllAccountsAsync();
         }
 
-        public async Task<bool> UpdateAccountAsync(Account account)
+        public async Task<bool> UpdateAccountAsync(AccountModel account)
         {
             return await AccountRepository.UpdateAccountAsync(account);
         }

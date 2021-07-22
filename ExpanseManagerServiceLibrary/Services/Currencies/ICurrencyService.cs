@@ -9,6 +9,6 @@ namespace ExpanseManagerServiceLibrary.Services.Currencies
 {
     public interface ICurrencyService
     {
-        Task<List<Currency>> GetAllCurrenciesAsync();
+        Task<List<CurrencyModel>> GetAllCurrenciesAsync();
     }
 }

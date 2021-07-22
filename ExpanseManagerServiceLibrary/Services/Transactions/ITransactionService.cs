@@ -9,6 +9,6 @@ namespace ExpanseManagerServiceLibrary.Services.Transactions
 {
     public interface ITransactionService
     {
-        Task<bool> TransferBallance(Account from, Account to, decimal amount);
+        Task<decimal> TransferBallance(AccountModel from, AccountModel to, decimal amount);
     }
 }

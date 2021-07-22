@@ -25,7 +25,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
             return result != 0;
         }
 
-        public async Task<Account> GetAccountByIdAsync(long id)
+        public async Task<AccountModel> GetAccountByIdAsync(long id)
         {
             var sql = @"SELECT * 
                         FROM (SELECT * 
@@ -37,7 +37,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
             var parameters = new { Id = id };
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
-            var result = await cnn.QueryAsync<Account, Currency, Account>(sql,
+            var result = await cnn.QueryAsync<AccountModel, CurrencyModel, AccountModel>(sql,
                 (account, currency) =>
                 {
                     account.Currency = currency;
@@ -49,7 +49,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
             return result.SingleOrDefault();
         }
 
-        public async Task<Account> GetAccountByUsernameAsync(string username)
+        public async Task<AccountModel> GetAccountByUsernameAsync(string username)
         {
             var sql = @"SELECT * 
                         FROM (SELECT * 
@@ -61,7 +61,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
             var parameters = new { UserName = username };
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
-            var result = await cnn.QueryAsync<Account, Currency, Account>(sql, 
+            var result = await cnn.QueryAsync<AccountModel, CurrencyModel, AccountModel>(sql, 
                 (account, currency) => 
                 {
                     account.Currency = currency;
@@ -73,7 +73,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
             return result.SingleOrDefault();
         }
 
-        public async Task<List<Account>> GetAllAccountsAsync()
+        public async Task<List<AccountModel>> GetAllAccountsAsync()
         {
             var sql = @"SELECT * 
                         FROM account AS a
@@ -82,7 +82,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
 
             using IDbConnection cnn = new SQLiteConnection(SqliteDataAccess.LoadConnectionString());
 
-            var result = await cnn.QueryAsync<Account, Currency, Account>(sql,
+            var result = await cnn.QueryAsync<AccountModel, CurrencyModel, AccountModel>(sql,
                 (account, currency) => 
                 {
                     account.Currency = currency;
@@ -93,7 +93,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
         }
 
         /*May throw validation(already exists) exception*/
-        public async Task<Account> StoreAccountAsync(Account account)
+        public async Task<AccountModel> StoreAccountAsync(AccountModel account)
         {
             var sql = @"INSERT INTO account(Name, UserName, PasswordHash, Ballance, Gender, Currency, LastTimeLogedIn) 
                         VALUES(@Name, @UserName, @PasswordHash, @Ballance, @Gender, @CurrencyId, @LastTimeLogedIn);
@@ -118,7 +118,7 @@ namespace ExpanseManagerDBLibrary.Repositories.Accounts
             return account;
         }
 
-        public async Task<bool> UpdateAccountAsync(Account account)
+        public async Task<bool> UpdateAccountAsync(AccountModel account)
         {
             var sql = @"UPDATE account 
                         SET Name = @Name,

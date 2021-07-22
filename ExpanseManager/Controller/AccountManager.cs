@@ -1,23 +1,28 @@
 ﻿using ExpanseManager.ConsoleView;
 using ExpanseManager.Controller.Services.Accounts;
 using ExpanseManagerDBLibrary.Models;
+using ExpanseManagerServiceLibrary.Exceptions;
+using ExpanseManagerServiceLibrary.Services.Transactions;
 using System;
+using System.Threading.Tasks;
 
 namespace ExpanseManager.Controller
 {
     public class AccountManager
     {
-        public Account ManagedAccount { get; }
+        public AccountModel ManagedAccount { get; }
         public AccountServiceView AccountServiceView { get; }
+        public ITransactionService TransactionService { get; } 
 
         private bool logout = false;
 
-        public AccountManager(Account account, AccountServiceView accountService)
+        public AccountManager(AccountModel account, AccountServiceView accountService, ITransactionService transactionService)
         {
             ManagedAccount = account;
             ManagedAccount.LastTimeLogedIn = DateTime.Now;
             AccountServiceView = accountService;
             AccountServiceView.UpdateAccount(ManagedAccount);
+            TransactionService = transactionService;
         }
 
         public void Start()
@@ -89,8 +94,7 @@ namespace ExpanseManager.Controller
                     Add();
                     break;
                 case "pay":
-                    //Pay();
-                    BasicOutputMessages.PrintResponseMessage("Sorry, this feature is not implemented yet. You'll have to wait till another release :/.");
+                    Pay();
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "change":
@@ -98,7 +102,6 @@ namespace ExpanseManager.Controller
                     editor.Start();
                     break;
                 case "export":
-                    break;
                 case "history":
                     BasicOutputMessages.PrintResponseMessage("Sorry, this feature is not implemented yet. You'll have to wait till another release :/.");
                     BasicOutputMessages.PrintAcknowledgeMessage();
@@ -137,11 +140,78 @@ namespace ExpanseManager.Controller
 
         public void Pay()
         {
-            /* show your ballance */
             /* show available users */
+            var accounts = Task.Run(async () => await AccountServiceView.AccountService.GetAllAccountsAsync()).Result;
+            int position = 1;
+
+            BasicOutputMessages.PrintResponseMessage("Available accounts:");
+
+            foreach (var account in accounts)
+            {
+                Console.WriteLine($"{position} - {account.UserName} - [{account.Currency.ShortName}]");
+                ++position;
+            }
+
             /* pick user */
-            /* propose payment -> TransactionService.Transferballance(u1, u2, amount) */
-            /* propagate the changes in local objects*/
+            Console.WriteLine();
+            BasicOutputMessages.PrintResponseMessage("Choose account from above list. Please insert the number associated with the account.");
+            var input = Console.ReadLine();
+            AccountModel chosenAccount;
+
+            while (true)
+            {
+                if (int.TryParse(input.Trim(), out var parsedInput) && parsedInput > 0 && parsedInput <= accounts.Count)
+                {
+                    chosenAccount = accounts[parsedInput-1];
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine();
+                    BasicOutputMessages.PrintInvalidInputErorMessage(input);
+                    BasicOutputMessages.PrintResponseMessage("Choose account from above list. Please insert the number associated with the account.");
+                    input = Console.ReadLine();
+                }   
+            }
+
+            /* check currencies */
+            /* show your ballance */
+            Console.WriteLine();
+            BasicOutputMessages.PrintResponseMessage("Your available ballance is:");
+            Console.WriteLine($"{ManagedAccount.Ballance} {ManagedAccount.Currency.ShortName}");
+            Console.WriteLine();
+            BasicOutputMessages.PrintResponseMessage("Insert the ballance you want to transfer:");
+            var inputAmount = Console.ReadLine();
+
+            while (true)
+            {
+                if (int.TryParse(inputAmount.Trim(), out var parsedAmount) && parsedAmount > 0 && parsedAmount <= ManagedAccount.Ballance)
+                {
+                    Task.Run(async () => 
+                    {
+                        try
+                        {
+                            var transferedAmount = await TransactionService.TransferBallance(ManagedAccount, chosenAccount, parsedAmount);
+                            BasicOutputMessages.PrintResponseMessage($"{transferedAmount} {chosenAccount.Currency.ShortName} was transfered to user {chosenAccount.Name}.");
+                        } 
+                        catch (UnknownExchangeRateException ex)
+                        {
+                            BasicOutputMessages.PrintErrorMessage(ex.Message);
+                            BasicOutputMessages.PrintAcknowledgeMessage();
+                            return;
+                        }
+                    }
+                    );
+                    break;
+                }
+                else
+                {
+                    BasicOutputMessages.PrintInvalidInputErorMessage(inputAmount);
+                    BasicOutputMessages.PrintResponseMessage("Try again.");
+                    inputAmount = Console.ReadLine();
+                }
+            }
+            BasicOutputMessages.PrintSuccessMessage("Success!");
         }
 
         public void LogOut()
@@ -152,12 +222,7 @@ namespace ExpanseManager.Controller
 
         public string ToJSON()
         {
-            if (ManagedAccount is Account account)
-            {
-                return account.ToJSON();
-            }
-
-            return "No JSON representation available :(";
+            return ManagedAccount.ToJSON();
         }
     }
 }

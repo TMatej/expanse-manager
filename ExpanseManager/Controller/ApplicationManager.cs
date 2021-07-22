@@ -7,11 +7,12 @@ using ExpanseManagerDBLibrary.Repositories.CurrencyConversions;
 using ExpanseManagerDBLibrary.Repositories.Payments;
 using ExpanseManagerServiceLibrary.Services.Accounts;
 using ExpanseManagerServiceLibrary.Services.Currencies;
+using ExpanseManagerServiceLibrary.Services.CurrencyConversions;
+using ExpanseManagerServiceLibrary.Services.Payments;
 using ExpanseManagerServiceLibrary.Services.Security;
+using ExpanseManagerServiceLibrary.Services.Transactions;
 using Newtonsoft.Json;
 using System;
-
-/*TODO ALL data should be store after user successfuly logs out!*/
 
 namespace ExpanseManager.Controller
 {
@@ -19,15 +20,17 @@ namespace ExpanseManager.Controller
     {
         private bool endProgram = false;
 
-        public IPaymentRepository PaymentRepository;
-        public IAccountRepository AccountRepository;
-        public ICurrencyRepository CurrencyRepository;
-        public ICurrencyConversionRepository CurrencyConversionRepository;
-
-        public IPasswordService PasswordService;
-        public IAccountService AccountService;
-        public ICurrencyService CurrencyService;
-        public AccountServiceView AccountServiceView;
+        public IPaymentRepository PaymentRepository { get; }
+        public IAccountRepository AccountRepository { get; }
+        public ICurrencyRepository CurrencyRepository { get; }
+        public ICurrencyConversionRepository CurrencyConversionRepository { get; }
+        public IPasswordService PasswordService { get; }
+        public IPaymentService PaymentService { get; }
+        public IAccountService AccountService { get; }
+        public ICurrencyService CurrencyService { get; }
+        public ICurrencyConversionService CurrencyConversionService { get; }
+        public ITransactionService TransactionService { get; }
+        public AccountServiceView AccountServiceView { get; }
 
         public ApplicationManager()
         {
@@ -36,8 +39,11 @@ namespace ExpanseManager.Controller
             CurrencyRepository = new CurrencyRepositoryImpl();
             CurrencyConversionRepository = new CurrencyConversionRepositoryImpl();
             PasswordService = new PasswordService();
+            PaymentService = new PaymentServiceImpl(PaymentRepository);
             AccountService = new AccountServiceImpl(AccountRepository);
             CurrencyService = new CurrencyServiceImpl(CurrencyRepository);
+            CurrencyConversionService = new CurrencyConversionServiceImpl(CurrencyConversionRepository);
+            TransactionService = new TransactionServiceImpl(AccountService, PaymentService, CurrencyConversionService);
             AccountServiceView = new AccountServiceView(AccountService, PasswordService, CurrencyService);
         }
 
@@ -118,11 +124,11 @@ namespace ExpanseManager.Controller
             Console.WriteLine();
             BasicOutputMessages.PrintResponseMessage($"Insert password for user {username}");
             Console.Write("Password: ");
-            var password = AccountServiceView.GetHiddenConsoleInput();  // TODO -> MAKE UTILS CLASS
+            var password = AccountServiceView.GetHiddenConsoleInput();
 
             Console.WriteLine();
 
-            Account account = AccountServiceView.GetAccountByUserName(username);
+            AccountModel account = AccountServiceView.GetAccountByUserName(username);
             if (account == null)
             {
                 BasicOutputMessages.PrintErrorMessage("Username or password is incorect! Try again.");
@@ -141,7 +147,7 @@ namespace ExpanseManager.Controller
             BasicOutputMessages.PrintSuccessMessage("Login successful!");
             BasicOutputMessages.PrintAcknowledgeMessage();
             Console.Clear();
-            var accountManager = new AccountManager(account, AccountServiceView);
+            var accountManager = new AccountManager(account, AccountServiceView, TransactionService);
             accountManager.Start();
         }
 
