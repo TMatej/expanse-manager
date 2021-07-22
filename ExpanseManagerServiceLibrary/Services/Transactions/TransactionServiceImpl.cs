@@ -1,12 +1,11 @@
 ﻿using ExpanseManagerDBLibrary.Models;
+using ExpanseManagerServiceLibrary.Exceptions;
 using ExpanseManagerServiceLibrary.Services.Accounts;
 using ExpanseManagerServiceLibrary.Services.CurrencyConversions;
 using ExpanseManagerServiceLibrary.Services.Payments;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace ExpanseManagerServiceLibrary.Services.Transactions
 {
@@ -15,11 +14,45 @@ namespace ExpanseManagerServiceLibrary.Services.Transactions
         public IAccountService AccountService { get; }
         public IPaymentService PaymentService { get; }
         public ICurrencyConversionService CurrencyConversionService { get; }
-        
 
-        public Task<bool> TransferBallance(Account from, Account to, decimal amount)
+        public TransactionServiceImpl(IAccountService accountService, IPaymentService paymentService, ICurrencyConversionService currencyConversionService)
         {
-            throw new NotImplementedException();
+            AccountService = accountService;
+            PaymentService = paymentService;
+            CurrencyConversionService = currencyConversionService;
+        }
+
+        
+        public async Task<decimal> TransferBallance(AccountModel from, AccountModel to, decimal amount)
+        {
+            var amountToTransfer = amount;
+
+            if (!from.Currency.Equals(to.Currency))
+            {
+                // may throw UnknownExchangeRateException
+                amountToTransfer = await CurrencyConversionService.Convert(from.Currency, to.Currency, amount);
+            }
+
+            if (from.Ballance < amountToTransfer)
+            {
+                throw new InsufficientBallanceException($"Account {from.UserName} doesn't have sufficient financial resources.");
+            }
+
+            from.Ballance = decimal.Subtract(from.Ballance, amount);
+            to.Ballance = decimal.Add(to.Ballance, amountToTransfer);
+            var payment = new PaymentModel(from, from.Currency, amount, to, to.Currency, amountToTransfer, DateTime.Now);
+
+            /*This has to be one transaction!*/
+            using (var transaction = new TransactionScope())
+            {
+                Task.WaitAll(PaymentService.CreatePayment(payment),
+                AccountService.UpdateAccountAsync(from),
+                AccountService.UpdateAccountAsync(to));
+
+                transaction.Complete();
+            }
+            
+            return amountToTransfer;
         }
     }
 }
