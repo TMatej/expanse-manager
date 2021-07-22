@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExpanseManager.ConsoleView
 {
     public class AccountEditorMessages
     {
-        public const string EditingAbortedMessage = "Edditing aborted!\nNo information changed.";
-        public const string EditingDoneMessage = "Edditing successful.";
+        private const string EditingAbortedMessage = "Edditing aborted!\nNo information changed.";
+        private const string EditingDoneMessage = "Edditing successful.";
         private const string EditingCommands = "Available commands:\n" +
             " name\t\tINFO\n" +
             " username\t\tINFO\n" +
