@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExpanseManagerDBLibrary.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace ExpanseManagerServiceLibrary.Services.Payments
 {
     public interface IPaymentService
     {
-
+        Task<PaymentModel> CreatePayment(PaymentModel payment);
     }
 }

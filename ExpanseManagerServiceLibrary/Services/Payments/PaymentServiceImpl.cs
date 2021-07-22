@@ -1,4 +1,5 @@
-﻿using ExpanseManagerDBLibrary.Repositories.Payments;
+﻿using ExpanseManagerDBLibrary.Models;
+using ExpanseManagerDBLibrary.Repositories.Payments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace ExpanseManagerServiceLibrary.Services.Payments
         public PaymentServiceImpl(IPaymentRepository paymentRepository)
         {
             PaymentRepository = paymentRepository;
+        }
+
+        public async Task<PaymentModel> CreatePayment(PaymentModel payment)
+        {
+            return await PaymentRepository.StorePaymentAsync(payment);
         }
     }
 }
