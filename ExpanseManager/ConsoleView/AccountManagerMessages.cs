@@ -14,7 +14,8 @@ namespace ExpanseManager.ConsoleView
 
         private const string RootCommands = AccountCommands +
             "\n\nRoot specific comands:\n" +
-            "add cur\t\tAllows root to insert new currencies. *May be included in a future release*\n" +
+            "all cur\t\tShow all available currencies.\n" +
+            "add cur\t\tAllows root to insert new currencies.\n" +
             "remove cur\t\tAllows root to remove specific currency. *May be included in a future release*\n" +
             "remove acc\t\tAllows root to remove specific account. *May be included in a future release*\n" +
             "revert payment\t\tAllows root to revert specific payment. *May be included in a future release*\n" +

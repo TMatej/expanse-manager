@@ -43,14 +43,14 @@ namespace ExpanseManagerServiceLibrary.Services.Transactions
             var payment = new PaymentModel(from, from.Currency, amount, to, to.Currency, amountToTransfer, DateTime.Now);
 
             /*This has to be one transaction!*/
-            using (var transaction = new TransactionScope())
-            {
+            //using (var transaction = new TransactionScope())
+            //{
                 Task.WaitAll(PaymentService.CreatePayment(payment),
                 AccountService.UpdateAccountAsync(from),
                 AccountService.UpdateAccountAsync(to));
 
-                transaction.Complete();
-            }
+               // transaction.Complete();
+            //}
             
             return amountToTransfer;
         }

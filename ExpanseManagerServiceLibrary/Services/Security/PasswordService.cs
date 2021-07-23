@@ -21,7 +21,7 @@ namespace ExpanseManagerServiceLibrary.Services.Security
 
         public bool ValidatePassword(string password)
         {
-            if (password == null)
+            if (String.IsNullOrEmpty(password))
             {
                 return false;
             }

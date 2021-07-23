@@ -13,6 +13,7 @@ using ExpanseManagerServiceLibrary.Services.Security;
 using ExpanseManagerServiceLibrary.Services.Transactions;
 using Newtonsoft.Json;
 using System;
+using System.Threading.Tasks;
 
 namespace ExpanseManager.Controller
 {
@@ -47,26 +48,26 @@ namespace ExpanseManager.Controller
             AccountServiceView = new AccountServiceView(AccountService, PasswordService, CurrencyService);
         }
 
-        public void Start()
+        public async Task Start()
         {
             ApplicationManagerMessages.PrintWelcomeMessage();
-            CreateRootIdentityIfDoesntExist();
+            await CreateRootIdentityIfDoesntExist();
             BasicOutputMessages.PrintAcknowledgeMessage();
-            CommandPhase();                                     /* Account manipulation */
+            await CommandPhase();                                     /* Account manipulation */
             ApplicationManagerMessages.PrintGoodByeMessage();
         }
 
-        private void CreateRootIdentityIfDoesntExist()
+        private async Task CreateRootIdentityIfDoesntExist()
         {
-            if (AccountServiceView.GetAccountByUserName("root") == null)
+            if (await AccountService.GetAccountByUserNameAsync("root") == null)
             {
                 ApplicationManagerMessages.PrintRootNotSetUpMessage();
-                AccountServiceView.CreateRootAccount();
+                await AccountServiceView.CreateRootAccountAsync();
                 ApplicationManagerMessages.PrintAccountAddedMessage();
             }
         }
 
-        private void CommandPhase()
+        private async Task CommandPhase()
         {
             while (!endProgram)
             {
@@ -75,11 +76,11 @@ namespace ExpanseManager.Controller
                 Console.WriteLine();
                 Console.Write("Command: ");
                 string userInput = Console.ReadLine();
-                HandleUserDecision(userInput);
+                await HandleUserDecision(userInput);
             }
         }
 
-        private void HandleUserDecision(string userDecision)
+        private async Task HandleUserDecision(string userDecision)
         {
             Console.WriteLine();
             switch (userDecision)
@@ -88,19 +89,20 @@ namespace ExpanseManager.Controller
                     endProgram = true;
                     break;
                 case "new":
-                    AccountServiceView.CreateNewAccount();
+                    await AccountServiceView.CreateNewAccountAsync();
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "login":
-                    LogIn();
+                    await LogIn();
                     break;
                 case "root":
-                    Console.WriteLine(AccountServiceView.GetAccountByUserName("root").ToJSON());
+                    var root = await AccountService.GetAccountByUserNameAsync("root");
+                    Console.WriteLine(root.ToJSON());
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "users":
                     /*  Prints accounts info in JSON (just for debug version) */
-                    PrintAccounts();
+                    await PrintAccounts();
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "":
@@ -114,7 +116,7 @@ namespace ExpanseManager.Controller
             }
         }
 
-        private void LogIn()
+        private async Task LogIn()
         {
             Console.Clear();
             BasicOutputMessages.PrintResponseMessage("Insert UserName of account.");
@@ -124,11 +126,11 @@ namespace ExpanseManager.Controller
             Console.WriteLine();
             BasicOutputMessages.PrintResponseMessage($"Insert password for user {username}");
             Console.Write("Password: ");
-            var password = AccountServiceView.GetHiddenConsoleInput();
+            var password = ViewUtils.GetHiddenConsoleInput();
 
             Console.WriteLine();
 
-            AccountModel account = AccountServiceView.GetAccountByUserName(username);
+            AccountModel account = await AccountService.GetAccountByUserNameAsync(username);
             if (account == null)
             {
                 BasicOutputMessages.PrintErrorMessage("Username or password is incorect! Try again.");
@@ -147,15 +149,15 @@ namespace ExpanseManager.Controller
             BasicOutputMessages.PrintSuccessMessage("Login successful!");
             BasicOutputMessages.PrintAcknowledgeMessage();
             Console.Clear();
-            var accountManager = new AccountManager(account, AccountServiceView, TransactionService);
-            accountManager.Start();
+            var accountManager = await AccountManager.InitializeAsync(account, AccountServiceView, TransactionService);
+            await accountManager.StartAsync();
         }
 
-        public void PrintAccounts()
+        public async Task PrintAccounts()
         {
             BasicOutputMessages.PrintResponseMessage("Available accounts:");
             Console.WriteLine();
-            Console.WriteLine(JsonConvert.SerializeObject(AccountServiceView.GetAllAccounts(), Formatting.Indented));
+            Console.WriteLine(JsonConvert.SerializeObject(await AccountService.GetAllAccountsAsync(), Formatting.Indented));
         }
     }
 }

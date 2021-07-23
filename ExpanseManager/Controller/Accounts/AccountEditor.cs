@@ -1,6 +1,8 @@
 ﻿using ExpanseManager.ConsoleView;
+using ExpanseManager.Controller.Accounts;
 using ExpanseManagerDBLibrary.Models;
 using System;
+using System.Threading.Tasks;
 
 namespace ExpanseManager.Controller.Services.Accounts
 {
@@ -17,17 +19,16 @@ namespace ExpanseManager.Controller.Services.Accounts
             Account = account;
             AccountServiceView = accountService;
             NewAccount = new AccountModel();
-            AccountServiceView.CoppyAccount(Account, NewAccount);
+            AccountUtils.CoppyAccount(Account, NewAccount);
         }
 
-        public void Start()
+        public async Task StartAsync()
         {
-            CommandPhase();
+            await CommandPhaseAsync();
         }
 
-        public void CommandPhase()
+        public async Task CommandPhaseAsync()
         {
-
             while (!confirmEditing)
             {
                 Console.Clear();
@@ -38,18 +39,18 @@ namespace ExpanseManager.Controller.Services.Accounts
                 AccountEditorMessages.PrintEditingCommands();
                 Console.Write("Command: ");
                 var userInput = Console.ReadLine();
-                HandleUserDecision(userInput.Trim());
+                await HandleUserDecisionAsync(userInput.Trim());
             }
         }
 
-        private void HandleUserDecision(string userDecision)
+        private async Task HandleUserDecisionAsync(string userDecision)
         {
             switch (userDecision)
             {
                 case "name":
                     BasicOutputMessages.PrintResponseMessage("Your current name is: ");
                     BasicOutputMessages.PrintResponseMessage(Account.Name);
-                    NewAccount.Name = AccountServiceView.CreateName("Insert your new name.");
+                    NewAccount.Name = AccountUtils.CreateName("Insert your new name.");
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
@@ -60,7 +61,7 @@ namespace ExpanseManager.Controller.Services.Accounts
                     }
                     BasicOutputMessages.PrintResponseMessage("Your current username is:");
                     BasicOutputMessages.PrintResponseMessage(Account.UserName);
-                    NewAccount.UserName = AccountServiceView.CreateUserName("Choose new unique username. Unfortunately, it cannot be your present name.");
+                    NewAccount.UserName = await AccountServiceView.CreateUserNameAsync("Choose new unique username. Unfortunately, it cannot be your present name.");
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
@@ -77,14 +78,14 @@ namespace ExpanseManager.Controller.Services.Accounts
                     }
                     BasicOutputMessages.PrintResponseMessage("Your current username is:");
                     BasicOutputMessages.PrintResponseMessage(Enum.GetName(Account.Gender));
-                    NewAccount.Gender = AccountServiceView.ChooseGender("Pick your new gender.");
+                    NewAccount.Gender = AccountUtils.ChooseGender("Pick your new gender.");
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "currency":
                     BasicOutputMessages.PrintResponseMessage("Your current currency is:");
                     BasicOutputMessages.PrintResponseMessage($"{Account.Currency.Name} [{Account.Currency.ShortName}]");
-                    NewAccount.Currency = AccountServiceView.ChooseCurrency("Pick new currency for your account. If none of the following is picked, first listed currency is used.");
+                    NewAccount.Currency = await AccountServiceView.ChooseCurrencyAsync("Pick new currency for your account. If none of the following is picked, first listed currency is used.");
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
@@ -98,9 +99,9 @@ namespace ExpanseManager.Controller.Services.Accounts
                 case "done":
                     Console.Clear();
                     confirmEditing = true;
-                    if (AccountServiceView.UpdateAccount(NewAccount))
+                    if (await AccountServiceView.AccountService.UpdateAccountAsync(NewAccount))
                     {
-                        AccountServiceView.CoppyAccount(NewAccount, Account);
+                        AccountUtils.CoppyAccount(NewAccount, Account);
                     }
 
                     AccountEditorMessages.PrintEditingDoneMessage();

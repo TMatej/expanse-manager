@@ -1,4 +1,5 @@
 ﻿using ExpanseManager.ConsoleView;
+using ExpanseManager.Controller.Accounts;
 using ExpanseManagerDBLibrary.Models;
 using ExpanseManagerDBLibrary.Models.Enums;
 using ExpanseManagerServiceLibrary.Services.Accounts;
@@ -6,7 +7,6 @@ using ExpanseManagerServiceLibrary.Services.Currencies;
 using ExpanseManagerServiceLibrary.Services.Security;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ExpanseManager.Controller.Services.Accounts
@@ -25,23 +25,22 @@ namespace ExpanseManager.Controller.Services.Accounts
             CurrencyService = currencyService;
         }
 
-        public AccountModel CreateNewAccount()
+        public async Task<AccountModel> CreateNewAccountAsync()
         {
             Console.Clear();
             BasicOutputMessages.PrintResponseMessage("To create new account please fill in the request. All information can be changed after logging into your account.");
             Console.WriteLine();
-            string username = CreateUserName();
+            string username = await CreateUserNameAsync();
             string password = CreatePassword();
-            string name = CreateName();
-            Sex gender = ChooseGender();
-            CurrencyModel currency = ChooseCurrency();
-
-            AccountModel account = CreateAccount(username, password, name, gender, currency);
+            string name = AccountUtils.CreateName();
+            Sex gender = AccountUtils.ChooseGender();
+            CurrencyModel currency = await ChooseCurrencyAsync();
+            AccountModel account = await CreateAccountAsync(username, password, name, gender, currency);
 
             return account;
         }
 
-        public AccountModel CreateRootAccount()
+        public async Task<AccountModel> CreateRootAccountAsync()
         {
             Console.Clear();
             BasicOutputMessages.PrintResponseMessage("To create a root account, please follow these few steps.");
@@ -49,14 +48,14 @@ namespace ExpanseManager.Controller.Services.Accounts
             string password = CreatePassword();
             string name = "Application root account";
             Sex gender = Sex.Other;
-            CurrencyModel currency = ChooseCurrency();
+            CurrencyModel currency = await ChooseCurrencyAsync();
 
-            AccountModel account = CreateAccount(username, password, name, gender, currency);
+            AccountModel account = await CreateAccountAsync(username, password, name, gender, currency);
 
             return account;
         }
 
-        private AccountModel CreateAccount(string username, string password, string name, Sex gender, CurrencyModel currency)
+        private async Task<AccountModel> CreateAccountAsync(string username, string password, string name, Sex gender, CurrencyModel currency)
         {
             AccountModel newAccount = new()
             {
@@ -68,7 +67,7 @@ namespace ExpanseManager.Controller.Services.Accounts
                 Currency = currency
             };
 
-            newAccount = Task.Run(async () => await AccountService.CreateAccountAsync(newAccount)).Result;
+            newAccount = await AccountService.CreateAccountAsync(newAccount);
             BasicOutputMessages.PrintSuccessMessage("Success! Account created!");
             Console.WriteLine();
             BasicOutputMessages.PrintResponseMessage("Sum of created account in JSON:");
@@ -77,11 +76,11 @@ namespace ExpanseManager.Controller.Services.Accounts
             return newAccount;
         }
 
-        public string CreateUserName(string request = "Choose a unique username.")
+        public async Task<string> CreateUserNameAsync(string request = "Choose a unique username.")
         {
             string username = null;
 
-            while (!ValidateUsername(username))
+            while (!await ValidateUsernameAsync(username))
             {
                 BasicOutputMessages.PrintResponseMessage(request);
                 Console.Write("Username: ");
@@ -107,14 +106,14 @@ namespace ExpanseManager.Controller.Services.Accounts
                     BasicOutputMessages.PrintResponseMessage("Choose a strong password.");
                     Console.WriteLine("Password must have at least 8 characters with at least one Capital letter, at least one lower case letter and at least one number or special character.");
                     Console.Write("Password: ");
-                    password = GetHiddenConsoleInput();
+                    password = ViewUtils.GetHiddenConsoleInput();
                     Console.WriteLine();
                 }
 
                 Console.WriteLine();
                 BasicOutputMessages.PrintResponseMessage("Please, re-enter the password.");
                 Console.Write("Password: ");
-                secondPassword = GetHiddenConsoleInput();
+                secondPassword = ViewUtils.GetHiddenConsoleInput();
                 Console.WriteLine();
 
                 if (!password.Equals(secondPassword))
@@ -131,87 +130,14 @@ namespace ExpanseManager.Controller.Services.Accounts
 
             return hashedPassword;
         }
-
-        public AccountModel GetAccountByUserName(string nickName)
-        {
-            return Task.Run(async () => await AccountService.GetAccountByUserNameAsync(nickName)).Result;
-        }
-
-        public List<AccountModel> GetAllAccounts()
-        {
-            return Task.Run(async () => await AccountService.GetAllAccountsAsync()).Result;
-        }
-
-        public bool UpdateAccount(AccountModel account)
-        {
-            return Task.Run(async () => await AccountService.UpdateAccountAsync(account)).Result;
-        }
-
-        public string GetHiddenConsoleInput()
-        {
-            StringBuilder input = new StringBuilder();
-            while (true)
-            {
-                var key = Console.ReadKey(true);
-                if (key.Key == ConsoleKey.Enter)
-                {
-                    break;
-                }
-                if (key.Key == ConsoleKey.Backspace && input.Length > 0)
-                {
-                    input.Remove(input.Length - 1, 1);
-                }
-                else if (key.Key != ConsoleKey.Backspace)
-                {
-                    input.Append(key.KeyChar);
-                }
-            }
-            return input.ToString();
-        }
-
-        public string CreateName(string request = "Insert your full name.")
-        {
-            string name;
-
-            Console.WriteLine();
-            BasicOutputMessages.PrintResponseMessage(request);
-            Console.Write("Name: ");
-            name = Console.ReadLine();
-            Console.WriteLine();
-
-            return name;
-        }
-
-        public Sex ChooseGender(string request = "Pick your gender.")
+                                
+        public async Task<CurrencyModel> ChooseCurrencyAsync(string request = "Pick currency for your account. If none of the following is picked, first listed currency is used.")
         {
             string input;
 
             Console.WriteLine();
             BasicOutputMessages.PrintResponseMessage(request);
-            Console.WriteLine("Options: ");
-            Console.WriteLine("\t1\tMale");
-            Console.WriteLine("\t2\tFemale");
-            Console.WriteLine("\t3\tOther");
-            Console.Write("Option: ");
-            input = Console.ReadLine().Trim();
-            Console.WriteLine();
-            var gender = input switch
-            {
-                "1" => Sex.Male,
-                "2" => Sex.Female,
-                _ => Sex.Other,
-            };
-
-            return gender;
-        }
-
-        public CurrencyModel ChooseCurrency(string request = "Pick currency for your account. If none of the following is picked, first listed currency is used.")
-        {
-            string input;
-
-            Console.WriteLine();
-            BasicOutputMessages.PrintResponseMessage(request);
-            var currencies = Task.Run(async () => await CurrencyService.GetAllCurrenciesAsync()).Result;
+            var currencies = await CurrencyService.GetAllCurrenciesAsync();
             var position = 0;
 
             Console.WriteLine("Options: ");
@@ -219,7 +145,6 @@ namespace ExpanseManager.Controller.Services.Accounts
             if (currencies.Count == 0)
             {
                 Console.WriteLine("No currency exists!");
-                // CREATE CURRENCY
             }
 
             foreach (var curr in currencies)
@@ -247,14 +172,14 @@ namespace ExpanseManager.Controller.Services.Accounts
             return currency;
         }
 
-        private bool ValidateUsername(string username)
+        private async Task<bool> ValidateUsernameAsync(string username)
         {
             if (username == null)
             {
                 return false;
             }
 
-            var result = Task.Run(async () => await AccountService.ValidateUsernameAsync(username)).Result;
+            var result = await AccountService.ValidateUsernameAsync(username);
 
             if (!result)
             {
@@ -264,18 +189,6 @@ namespace ExpanseManager.Controller.Services.Accounts
 
             BasicOutputMessages.PrintSuccessMessage("Pass");
             return true;
-        }
-
-        public void CoppyAccount(AccountModel source, AccountModel destination)
-        {
-            destination.Id = source.Id;
-            destination.UserName = source.UserName;
-            destination.PasswordHash = source.PasswordHash;
-            destination.Name = source.Name;
-            destination.Gender = source.Gender;
-            destination.Ballance = source.Ballance;
-            destination.Currency = source.Currency;
-            destination.LastTimeLogedIn = source.LastTimeLogedIn.Value;
         }
     }
 }
