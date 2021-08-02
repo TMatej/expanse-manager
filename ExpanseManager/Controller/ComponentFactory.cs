@@ -1,4 +1,5 @@
-﻿using ExpanseManager.Controller.Services.Accounts;
+﻿using ExpanseManager.Controller.Accounts;
+using ExpanseManager.Controller.Services.Accounts;
 using ExpanseManagerDBLibrary.Repositories.Accounts;
 using ExpanseManagerDBLibrary.Repositories.Currencies;
 using ExpanseManagerDBLibrary.Repositories.CurrencyConversions;
@@ -56,9 +57,9 @@ namespace ExpanseManager.Controller
         {
             return new TransactionServiceImpl(GetAccountService(), GetPaymentService(), GetCurrencyConversionService());
         }
-        public static AccountServiceView GetAccountServiceView()
+        public static AccountUtils GetAccountServiceView()
         {
-            return new AccountServiceView(GetAccountService(), GetPasswordService(), GetCurrencyService());
+            return new AccountUtils(GetAccountService(), GetPasswordService(), GetCurrencyService(), GetCurrencyConversionService());
         }
     }
 }

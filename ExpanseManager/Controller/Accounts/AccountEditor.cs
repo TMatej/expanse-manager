@@ -3,6 +3,7 @@ using ExpanseManager.Controller.Accounts;
 using ExpanseManagerDBLibrary.Models;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace ExpanseManager.Controller.Services.Accounts
 {
@@ -12,14 +13,14 @@ namespace ExpanseManager.Controller.Services.Accounts
 
         public AccountModel Account { get; }
         public AccountModel NewAccount { get; }
-        public AccountServiceView AccountServiceView { get; }
+        public AccountUtils AccountUtils { get; }
         
-        public AccountEditor(AccountModel account, AccountServiceView accountService)
+        public AccountEditor(AccountModel account, AccountUtils accountUtils)
         {
             Account = account;
-            AccountServiceView = accountService;
+            AccountUtils = accountUtils;
             NewAccount = new AccountModel();
-            AccountUtils.CoppyAccount(Account, NewAccount);
+            Controller.Accounts.AccountUtils.CoppyAccount(Account, NewAccount);
         }
 
         public async Task StartAsync()
@@ -61,13 +62,13 @@ namespace ExpanseManager.Controller.Services.Accounts
                     }
                     BasicOutputMessages.PrintResponseMessage("Your current username is:");
                     BasicOutputMessages.PrintResponseMessage(Account.UserName);
-                    NewAccount.UserName = await AccountServiceView.CreateUserNameAsync("Choose new unique username. Unfortunately, it cannot be your present name.");
+                    NewAccount.UserName = await AccountUtils.CreateUserNameAsync("Choose new unique username. Unfortunately, it cannot be your present name.");
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "password":
                     BasicOutputMessages.PrintResponseMessage("Your current password is: ... You should remember it mate :D ");
-                    NewAccount.PasswordHash = AccountServiceView.CreatePassword();
+                    NewAccount.PasswordHash = AccountUtils.CreatePassword();
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
@@ -85,7 +86,7 @@ namespace ExpanseManager.Controller.Services.Accounts
                 case "currency":
                     BasicOutputMessages.PrintResponseMessage("Your current currency is:");
                     BasicOutputMessages.PrintResponseMessage($"{Account.Currency.Name} [{Account.Currency.ShortName}]");
-                    NewAccount.Currency = await AccountServiceView.ChooseCurrencyAsync("Pick new currency for your account. If none of the following is picked, first listed currency is used.");
+                    await ChangeCurrency();
                     BasicOutputMessages.PrintSuccessMessage("Success!");
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
@@ -99,9 +100,9 @@ namespace ExpanseManager.Controller.Services.Accounts
                 case "done":
                     Console.Clear();
                     confirmEditing = true;
-                    if (await AccountServiceView.AccountService.UpdateAccountAsync(NewAccount))
+                    if (await AccountUtils.AccountService.UpdateAccountAsync(NewAccount))
                     {
-                        AccountUtils.CoppyAccount(NewAccount, Account);
+                        Controller.Accounts.AccountUtils.CoppyAccount(NewAccount, Account);
                     }
 
                     AccountEditorMessages.PrintEditingDoneMessage();
@@ -118,6 +119,57 @@ namespace ExpanseManager.Controller.Services.Accounts
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
             }
+        }
+
+        private async Task ChangeCurrency()
+        {
+            var availableConversions = await AccountUtils.CurrencyConversionService.GetCurrencyConversionsByFromCurrency(Account.Currency);
+            var availableCurrencies = availableConversions.Select(conversion => conversion.CurrencyTo).ToList();
+
+            if (availableConversions.Count == 0)
+            {
+                Console.WriteLine("No available conversion exists!");
+                return;
+            }
+
+            Console.WriteLine("Options:");
+            Console.WriteLine();
+            Console.WriteLine("\tID\tName\tShort name\tConversion rate");
+
+            var position = 0;
+
+            foreach (var curr in availableConversions)
+            {
+                position += 1;
+                Console.WriteLine($"\t{position}\t{curr.CurrencyTo.Name}\t[{curr.CurrencyTo.ShortName}]\t{curr.Rate} : 1");
+            }
+
+            string input;
+            Console.WriteLine();
+            CurrencyConversionModel conversion;
+            CurrencyModel currency;
+
+            while (true)
+            {
+                Console.Write("Option: ");
+                input = Console.ReadLine().Trim();
+                if (!int.TryParse(input, out var parsedInput) || parsedInput <= 0 || parsedInput > availableConversions.Count)
+                {
+                    BasicOutputMessages.PrintInvalidInputErorMessage(input);
+                }
+                else
+                {
+                    conversion = availableConversions[parsedInput - 1];
+                    currency = conversion.CurrencyTo;
+                    break;
+                }
+            }
+            
+            BasicOutputMessages.PrintResponseMessage($"Choosen currency: {currency.Name} [{currency.ShortName}]");
+            NewAccount.Currency = currency;
+            NewAccount.Ballance = decimal.Multiply(NewAccount.Ballance, conversion.Rate);
+            BasicOutputMessages.PrintResponseMessage($"New account ballance is {NewAccount.Ballance} {NewAccount.Currency.ShortName}.");
+            Console.WriteLine();
         }
 
         private bool CheckRoot()

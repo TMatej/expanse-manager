@@ -1,4 +1,5 @@
 ﻿using ExpanseManager.ConsoleView;
+using ExpanseManager.Controller.Accounts;
 using ExpanseManager.Controller.Services.Accounts;
 using ExpanseManagerDBLibrary.Models;
 using ExpanseManagerServiceLibrary.Exceptions;
@@ -11,23 +12,23 @@ namespace ExpanseManager.Controller
     public class AccountManager
     {
         public AccountModel ManagedAccount { get; }
-        public AccountServiceView AccountServiceView { get; }
+        public AccountUtils AccountUtils { get; }
         public ITransactionService TransactionService { get; } 
 
         private bool logout = false;
 
-        private AccountManager(AccountModel account, AccountServiceView accountService, ITransactionService transactionService)
+        private AccountManager(AccountModel account, AccountUtils accountUtils, ITransactionService transactionService)
         {
             ManagedAccount = account;
-            AccountServiceView = accountService;
+            AccountUtils = accountUtils;
             TransactionService = transactionService;
             ManagedAccount.LastTimeLogedIn = DateTime.Now;
         }
 
-        public static async Task<AccountManager> InitializeAsync(AccountModel account, AccountServiceView accountService, ITransactionService transactionService)
+        public static async Task<AccountManager> InitializeAsync(AccountModel account, AccountUtils accountService, ITransactionService transactionService)
         {
             var myManager = new AccountManager(account, accountService, transactionService);
-            await myManager.AccountServiceView.AccountService.UpdateAccountAsync(myManager.ManagedAccount);
+            await myManager.AccountUtils.AccountService.UpdateAccountAsync(myManager.ManagedAccount);
             return myManager;
         }
 
@@ -96,7 +97,7 @@ namespace ExpanseManager.Controller
 
         private async Task PrintAllCurrencies()
         {
-            var currencies = await AccountServiceView.CurrencyService.GetAllCurrenciesAsync();
+            var currencies = await AccountUtils.CurrencyService.GetAllCurrenciesAsync();
             var position = 0;
 
             Console.WriteLine("Currencies: ");
@@ -124,7 +125,7 @@ namespace ExpanseManager.Controller
             try
             {
                 CurrencyModel currency = new(shortNameInput.Trim(), longNameInput.Trim());
-                await AccountServiceView.CurrencyService.CreateCurrency(currency);
+                await AccountUtils.CurrencyService.CreateCurrency(currency);
             }
             catch (CouldntCreateCurrencyException ex)
             {
@@ -174,7 +175,7 @@ namespace ExpanseManager.Controller
 
         private async Task StartAccountEditingAsync()
         {
-            var editor = new AccountEditor(ManagedAccount, AccountServiceView);
+            var editor = new AccountEditor(ManagedAccount, AccountUtils);
             await editor.StartAsync();
         }
 
@@ -185,7 +186,7 @@ namespace ExpanseManager.Controller
             if (decimal.TryParse(input.Trim(), out decimal convertedInput) && convertedInput >= 0)
             {
                 ManagedAccount.Ballance += convertedInput;
-                await AccountServiceView.AccountService.UpdateAccountAsync(ManagedAccount);
+                await AccountUtils.AccountService.UpdateAccountAsync(ManagedAccount);
                 BasicOutputMessages.PrintResponseMessage($"Ballance increased! Current ballance is {ManagedAccount.Ballance} {ManagedAccount.Currency.ShortName}");
             } 
             else
@@ -198,7 +199,7 @@ namespace ExpanseManager.Controller
         public async Task PayAsync()
         {
             /* show available users */
-            var accounts = await AccountServiceView.AccountService.GetAllAccountsAsync();
+            var accounts = await AccountUtils.AccountService.GetAllAccountsAsync();
             int position = 1;
 
             BasicOutputMessages.PrintResponseMessage("Available accounts:");

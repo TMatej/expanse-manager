@@ -1,4 +1,5 @@
 ﻿using ExpanseManager.ConsoleView;
+using ExpanseManager.Controller.Accounts;
 using ExpanseManager.Controller.Services.Accounts;
 using ExpanseManagerDBLibrary.Models;
 using ExpanseManagerDBLibrary.Repositories.Accounts;
@@ -31,7 +32,7 @@ namespace ExpanseManager.Controller
         public ICurrencyService CurrencyService { get; }
         public ICurrencyConversionService CurrencyConversionService { get; }
         public ITransactionService TransactionService { get; }
-        public AccountServiceView AccountServiceView { get; }
+        public AccountUtils AccountUtils { get; }
 
         public ApplicationManager()
         {
@@ -45,10 +46,10 @@ namespace ExpanseManager.Controller
             CurrencyService = new CurrencyServiceImpl(CurrencyRepository);
             CurrencyConversionService = new CurrencyConversionServiceImpl(CurrencyConversionRepository);
             TransactionService = new TransactionServiceImpl(AccountService, PaymentService, CurrencyConversionService);
-            AccountServiceView = new AccountServiceView(AccountService, PasswordService, CurrencyService);
+            AccountUtils = new AccountUtils(AccountService, PasswordService, CurrencyService, CurrencyConversionService);
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             ApplicationManagerMessages.PrintWelcomeMessage();
             await CreateRootIdentityIfDoesntExist();
@@ -62,7 +63,7 @@ namespace ExpanseManager.Controller
             if (await AccountService.GetAccountByUserNameAsync("root") == null)
             {
                 ApplicationManagerMessages.PrintRootNotSetUpMessage();
-                await AccountServiceView.CreateRootAccountAsync();
+                await AccountUtils.CreateRootAccountAsync();
                 ApplicationManagerMessages.PrintAccountAddedMessage();
             }
         }
@@ -89,7 +90,7 @@ namespace ExpanseManager.Controller
                     endProgram = true;
                     break;
                 case "new":
-                    await AccountServiceView.CreateNewAccountAsync();
+                    await AccountUtils.CreateNewAccountAsync();
                     BasicOutputMessages.PrintAcknowledgeMessage();
                     break;
                 case "login":
@@ -149,7 +150,7 @@ namespace ExpanseManager.Controller
             BasicOutputMessages.PrintSuccessMessage("Login successful!");
             BasicOutputMessages.PrintAcknowledgeMessage();
             Console.Clear();
-            var accountManager = await AccountManager.InitializeAsync(account, AccountServiceView, TransactionService);
+            var accountManager = await AccountManager.InitializeAsync(account, AccountUtils, TransactionService);
             await accountManager.StartAsync();
         }
 
