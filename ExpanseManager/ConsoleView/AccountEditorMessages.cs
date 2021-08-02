@@ -11,7 +11,7 @@ namespace ExpanseManager.ConsoleView
             " username\t\tINFO\n" +
             " password\t\tINFO\n" +
             " sex\t\tINFO\n" +
-            " currency\t\tINFO\n" +
+            " currency\t\tINFO\n\n" +
             " abort\t\tINFO\n" +
             " done\t\tINFO\n";
 
