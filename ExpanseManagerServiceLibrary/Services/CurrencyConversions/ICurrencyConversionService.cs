@@ -11,6 +11,9 @@ namespace ExpanseManagerServiceLibrary.Services.CurrencyConversions
     {
         Task<decimal> Convert(CurrencyModel source, CurrencyModel target, decimal amount);
         Task<decimal> GetExchangeRate(CurrencyModel source, CurrencyModel targer);
+        Task<List<CurrencyConversionModel>> GetCurrencyConversionsByFromCurrency(CurrencyModel currency);
+        Task<List<CurrencyConversionModel>> GetCurrencyConversionsByToCurrency(CurrencyModel currency);
+        Task<List<CurrencyConversionModel>> GetAllCurrencyConversions();
         Task<CurrencyConversionModel> CreateCurrencyConversion(CurrencyConversionModel currencyConversion);
         Task<bool> UpdateCurrencyConversion(CurrencyConversionModel currencyConversion);
         Task<bool> DeleteCurrencyConversion(long id);

@@ -9,7 +9,7 @@ namespace ExpanseManager
         static Task Main(string[] args)
         {
             ApplicationManager manager = new ApplicationManager();
-            return manager.Start();
+            return manager.StartAsync();
         }
     }
 }

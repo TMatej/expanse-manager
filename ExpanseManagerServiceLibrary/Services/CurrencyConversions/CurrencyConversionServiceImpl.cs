@@ -2,6 +2,8 @@
 using ExpanseManagerDBLibrary.Repositories.CurrencyConversions;
 using ExpanseManagerServiceLibrary.Exceptions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ExpanseManagerServiceLibrary.Services.CurrencyConversions
@@ -43,6 +45,25 @@ namespace ExpanseManagerServiceLibrary.Services.CurrencyConversions
             }
 
             return currencyConversion.Rate;
+        }
+
+        public async Task<List<CurrencyConversionModel>> GetCurrencyConversionsByFromCurrency(CurrencyModel currency)
+        {
+            var currencyConversions = await CurrencyConversionRepository.GetAllCurrencyConversionsAsync();
+
+            return currencyConversions.Where(conversion => conversion.CurrencyFrom.Equals(currency)).ToList();
+        }
+
+        public async Task<List<CurrencyConversionModel>> GetCurrencyConversionsByToCurrency(CurrencyModel currency)
+        {
+            var currencyConversions = await CurrencyConversionRepository.GetAllCurrencyConversionsAsync();
+
+            return currencyConversions.Where(conversion => conversion.CurrencyTo.Equals(currency)).ToList();
+        }
+
+        public async Task<List<CurrencyConversionModel>> GetAllCurrencyConversions()
+        {
+            return await CurrencyConversionRepository.GetAllCurrencyConversionsAsync();
         }
 
         public async Task<CurrencyConversionModel> CreateCurrencyConversion(CurrencyConversionModel currencyConversion)
